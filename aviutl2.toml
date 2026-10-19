@@ -1,0 +1,32 @@
+#:schema ./.aviutl2-cli/aviutl2.schema.json
+# 設定ファイルについては https://github.com/sevenc-nanashi/aviutl2-cli を参照してください。
+[project]
+id = "progress-pict"
+name = "進捗画像キャプチャ"
+version = "0.1.0"
+
+[development]
+aviutl2_version = "latest"
+
+[artifacts.English-progress_pict-aul2]
+destination = "Language/English.progress_pict.aul2"
+source = "./i18n/English.progress_pict.aul2"
+
+[artifacts.English-aul2]
+enabled = false
+destination = "Language/English.aul2"
+source = "https://raw.githubusercontent.com/aviutl2/aviutl2_community_translation/refs/heads/main/locales/original_english.aul2"
+
+[artifacts.English-aul2.profiles.debug]
+enabled = true
+
+[artifacts.progress_pict-aux2]
+destination = "Plugin/progress_pict.aux2"
+
+[artifacts.progress_pict-aux2.profiles.debug]
+build = ["cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug", "cmake --build build --config Debug"]
+source = "build/Debug/progress_pict.dll"
+
+[artifacts.progress_pict-aux2.profiles.release]
+build = ["cmake -S . -B build -DCMAKE_BUILD_TYPE=Release", "cmake --build build --config Release"]
+source = "build/Release/progress_pict.dll"
