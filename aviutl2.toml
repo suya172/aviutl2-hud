@@ -1,32 +1,45 @@
 #:schema ./.aviutl2-cli/aviutl2.schema.json
 # 設定ファイルについては https://github.com/sevenc-nanashi/aviutl2-cli を参照してください。
 [project]
-id = "progress-pict"
-name = "進捗画像キャプチャ"
+id = "hud-screenshot-merger"
+name = "HUD Screenshot Merger"
 version = "0.1.0"
 
 [development]
 aviutl2_version = "latest"
 
-[artifacts.English-progress_pict-aul2]
-destination = "Language/English.progress_pict.aul2"
-source = "./i18n/English.progress_pict.aul2"
+[preview]
+profile = "release"
+include = ["hud_screenshot_merger-aux2", "English-hud_screenshot_merger-aul2"]
 
-[artifacts.English-aul2]
-enabled = false
-destination = "Language/English.aul2"
-source = "https://raw.githubusercontent.com/aviutl2/aviutl2_community_translation/refs/heads/main/locales/original_english.aul2"
+[release]
+profile = "release"
+include = ["hud_screenshot_merger-aux2", "English-hud_screenshot_merger-aul2"]
+output_dir = "release"
+package_template = "package/package.txt"
+package_id = "hud-screenshot-merger"
+package_name = "HUD Screenshot Merger"
+package_information = "{name} v{version}"
+uninstall_subfolder_file = true
+zip_name = "{name}-v{version}"
 
-[artifacts.English-aul2.profiles.debug]
-enabled = true
+[artifacts.English-hud_screenshot_merger-aul2]
+destination = "Language/English.hud_screenshot_merger.aul2"
+source = "./i18n/English.hud_screenshot_merger.aul2"
 
-[artifacts.progress_pict-aux2]
-destination = "Plugin/progress_pict.aux2"
+[artifacts.hud_screenshot_merger-aux2]
+destination = "Plugin/hud_screenshot_merger/hud_screenshot_merger.aux2"
 
-[artifacts.progress_pict-aux2.profiles.debug]
-build = ["cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug", "cmake --build build --config Debug"]
-source = "build/Debug/progress_pict.dll"
+[artifacts.hud_screenshot_merger-aux2.profiles.debug]
+build = [
+    "cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug",
+    "cmake --build build --config Debug --target hud_screenshot_merger"
+]
+source = "build/Debug/hud_screenshot_merger.dll"
 
-[artifacts.progress_pict-aux2.profiles.release]
-build = ["cmake -S . -B build -DCMAKE_BUILD_TYPE=Release", "cmake --build build --config Release"]
-source = "build/Release/progress_pict.dll"
+[artifacts.hud_screenshot_merger-aux2.profiles.release]
+build = [
+    "cmake -S . -B build -DCMAKE_BUILD_TYPE=Release",
+    "cmake --build build --config Release --target hud_screenshot_merger"
+]
+source = "build/Release/hud_screenshot_merger.dll"

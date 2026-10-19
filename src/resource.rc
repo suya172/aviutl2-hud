@@ -1,0 +1,23 @@
+#include <windows.h>
+#include <commctrl.h>
+#include "resource.h"
+
+#pragma code_page(65001)
+
+IDD_CONFIG_DIALOG DIALOGEX 0, 0, 240, 110
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "HUD Screenshot Merger 設定"
+FONT 9, "Segoe UI", 400, 0, 0x1
+BEGIN
+    LTEXT           "ユーザー名", IDC_STATIC, 16, 17, 72, 9
+    EDITTEXT        IDC_EDIT_USERNAME, 92, 14, 132, 14, ES_AUTOHSCROLL
+
+    LTEXT           "HUD 配色パレット", IDC_STATIC, 16, 37, 72, 9
+    COMBOBOX        IDC_COMBO_PALETTE, 92, 34, 132, 120, CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+
+    LTEXT           "保存後の動作", IDC_STATIC, 16, 57, 72, 9
+    AUTOCHECKBOX    "保存完了時に画像を開く", IDC_CHECK_OPEN_AFTER_SAVE, 92, 56, 132, 12
+
+    DEFPUSHBUTTON   "OK", IDOK, 126, 82, 46, 15
+    PUSHBUTTON      "キャンセル", IDCANCEL, 178, 82, 46, 15
+END
