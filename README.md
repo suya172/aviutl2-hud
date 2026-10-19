@@ -11,7 +11,7 @@ AviUtl2の編集状況を一枚の画像にキャプチャしてくれる汎用�
 # ライセンス
 MIT License
 
-Copyright (c) [year] [copyright holders]
+Copyright (c) 2026 suya_172
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
