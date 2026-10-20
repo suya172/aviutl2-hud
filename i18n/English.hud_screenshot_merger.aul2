@@ -1,6 +1,7 @@
 [HUD Screenshot Merger]
 HUD Screenshot Merger=HUD Screenshot Merger
-HUD Screenshot Merger v0.1.0=HUD Screenshot Merger v0.1.0
+HUD Screenshot Merger v0.2.0=HUD Screenshot Merger v0.2.0
 進捗画像をキャプチャして保存...=Capture & Save Progress Screenshot...
-映像フレームのレンダリング取得に失敗しました。=Failed to render video frame.
-画像の結合または保存に失敗しました。=Failed to merge or save image.
+映像フレームを取得できませんでした。=Failed to get video frame.
+画像を保存できませんでした。=Failed to save image.
+画像を保存しました。=Image saved.

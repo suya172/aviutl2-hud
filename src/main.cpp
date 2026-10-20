@@ -21,7 +21,7 @@ static std::atomic<int> g_activeWorkers{0};
 
 static COMMON_PLUGIN_TABLE g_pluginTable = {
     .name = L"HUD Screenshot Merger",
-    .information = L"HUD Screenshot Merger v0.1.0",
+    .information = L"HUD Screenshot Merger v0.2.0",
 };
 
 BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpvReserved) {

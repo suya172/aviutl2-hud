@@ -294,7 +294,7 @@ target_link_libraries(hud_screenshot_merger PRIVATE
 [project]
 id = "hud-screenshot-merger"
 name = "HUD Screenshot Merger"
-version = "0.1.0"
+version = "0.2.0"
 
 [development]
 aviutl2_version = "latest"

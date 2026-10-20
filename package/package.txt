@@ -1,4 +1,4 @@
-HUD Screenshot Merger v0.1.0
+HUD Screenshot Merger v0.2.0
 進捗画像キャプチャプラグイン for AviUtl ExEdit2
 
 【概要】
