@@ -54,7 +54,8 @@ bool RenderAndSave(const VideoFrameBuffer& frame,
 
     GdiplusInitScope gdiScope;
 
-    const int hudHeight = 120;
+    // HUD領域の高さを140pxに拡張して文字の見切れと余白詰まりを解消
+    const int hudHeight = 140;
     const int totalWidth = frame.width;
     const int totalHeight = frame.height + hudHeight;
 
@@ -101,8 +102,8 @@ bool RenderAndSave(const VideoFrameBuffer& frame,
 
     // カラム区切り縦線 (Divider): PROJECT / TIMELINE / SESSION の間に薄いグレー線を描画
     Gdiplus::Pen dividerPen(pal.divider, 1.0f);
-    float dividerY1 = static_cast<float>(frame.height) + 18.0f;
-    float dividerY2 = static_cast<float>(totalHeight) - 18.0f;
+    float dividerY1 = static_cast<float>(frame.height) + 20.0f;
+    float dividerY2 = static_cast<float>(totalHeight) - 20.0f;
 
     float div1X = padX + colWidth;
     float div2X = padX + colWidth * 2.0f;
@@ -127,12 +128,12 @@ bool RenderAndSave(const VideoFrameBuffer& frame,
     format.SetAlignment(Gdiplus::StringAlignmentNear);
     format.SetLineAlignment(Gdiplus::StringAlignmentNear);
     format.SetTrimming(Gdiplus::StringTrimmingEllipsisCharacter);
-    format.SetFormatFlags(Gdiplus::StringFormatFlagsNoWrap);
+    format.SetFormatFlags(Gdiplus::StringFormatFlagsNoWrap | Gdiplus::StringFormatFlagsNoClip);
 
-    // 行Y座標
-    float yRowLabel = static_cast<float>(frame.height) + 18.0f;
-    float yRowValue = static_cast<float>(frame.height) + 38.0f;
-    float yRowMuted = static_cast<float>(frame.height) + 78.0f;
+    // 行Y座標（十分な縦幅を確保して見切れを防止）
+    float yRowLabel = static_cast<float>(frame.height) + 20.0f;
+    float yRowValue = static_cast<float>(frame.height) + 44.0f;
+    float yRowMuted = static_cast<float>(frame.height) + 94.0f;
 
     auto DrawColumn = [&](int colIndex,
                           const std::wstring& label,
@@ -145,9 +146,10 @@ bool RenderAndSave(const VideoFrameBuffer& frame,
             w -= innerPadX;
         }
 
-        Gdiplus::RectF rectLabel(x, yRowLabel, w, 18.0f);
-        Gdiplus::RectF rectValue(x, yRowValue, w, 28.0f);
-        Gdiplus::RectF rectMuted(x, yRowMuted, w, 22.0f);
+        // バウンディングボックスの高さを大きく取り、フォントのディセンダまで余裕を持たせる
+        Gdiplus::RectF rectLabel(x, yRowLabel, w, 22.0f);
+        Gdiplus::RectF rectValue(x, yRowValue, w, 32.0f);
+        Gdiplus::RectF rectMuted(x, yRowMuted, w, 26.0f);
 
         g.DrawString(label.c_str(), -1, &fontLabel, rectLabel, &format, &labelBrush);
         g.DrawString(value.c_str(), -1, &fontValue, rectValue, &format, &valueBrush);
@@ -172,11 +174,11 @@ bool RenderAndSave(const VideoFrameBuffer& frame,
 
     DrawColumn(1, L"TIMELINE", ossTimelineValue.str(), ossTimelineMuted.str());
 
-    // TIMELINE プログレスバー描画 (Value と Muted の間に細いバーを描画)
+    // TIMELINE プログレスバー描画 (Value と Muted の間に適切なマージンを設けて細いバーを描画)
     {
         float x = padX + colWidth + innerPadX;
         float w = colWidth - innerPadX * 2.0f;
-        float barY = static_cast<float>(frame.height) + 67.0f;
+        float barY = static_cast<float>(frame.height) + 80.0f;
         float barHeight = 4.0f;
 
         // トラック背景
