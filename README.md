@@ -1,33 +1,23 @@
 # HUD Screenshot Merger (進捗画像キャプチャ)
 
-AviUtl2の編集状況を一枚の画像にキャプチャしてくれる汎用プラグイン`aux2`です。
-`ファイル->エクスポート`から実行できます。
+AviUtl ExEdit2（AviUtl2）の現在のプレビューフレームとプロジェクトの編集情報（HUD）を1枚の画像に合成・出力する汎用プラグイン（`.aux2`）です。  
+
+<!-- スクリーンショットを配置する場合は以下のコメントを外してパスを指定してください -->
+<!-- ![出力サンプル](docs/sample.png) -->
 
 ---
-# 謝辞
-このプラグインは`aviutl2-cli`を用いて開発されています。
-詳細は`https://github.com/sevenc-nanashi/aviutl2-cli`をご覧ください。
 
-# ライセンス
-MIT License
+## 導入方法
 
-Copyright (c) 2026 suya_172
+### 方法1：パッケージからインストール（推奨）
+1. [Releases](../../releases) ページから最新版の `hud_screenshot_merger-vX.X.X.au2pkg.zip` をダウンロードします。
+2. ダウンロードした `.au2pkg.zip` ファイルを解凍せず、そのまま **AviUtl2 のプレビュー画面へドラッグ＆ドロップ** してください。
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+### 方法2：手動で配置する場合
+ZIPファイルを解凍し、各ファイルを以下のフォルダ（`%AppData%\aviutl2` または `C:\ProgramData\aviutl2` 配下）へ配置してください。
+* `Plugin/hud_screenshot_merger.aux2` → `Plugin` フォルダ
+* `Language/English.hud_screenshot_merger.aul2` → `Language` フォルダ
 
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO, AND WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TITLE, OR NON-INFRINGEMENT,
-OUT OF ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF
-CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF IN CONNECTION WITH THE
-SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+## 使い方
+1. メニューバーの **「ファイル」→「エクスポート」→「進捗画像をキャプチャして保存」** を選択します。
+2. 保存ダイアログが表示されるので、任意の保存先を指定して保存してください。

@@ -50,23 +50,45 @@ static void OnCaptureMenuClicked(EDIT_SECTION* edit_section) {
         return;
     }
 
+    // メニュー実行時のアクティブウィンドウ（分離プレビュー画面等）を特定
+    HWND activeWnd = GetForegroundWindow();
+    HWND hostWnd = g_editHandle->get_host_app_window ? g_editHandle->get_host_app_window() : nullptr;
+    HWND targetWnd = (activeWnd && IsWindow(activeWnd)) ? activeWnd : hostWnd;
+
     // 1. 編集セクション（編集ロック）内でメトリクス情報を即座に収集
     hud::HudMetrics metrics = hud::CollectMetrics(edit_section, g_editHandle);
 
     // 2. 編集セクションを速やかに終了させ、別スレッドで保存ダイアログとレンダリングを実行
     g_activeWorkers.fetch_add(1);
-    std::thread([metrics = std::move(metrics)]() {
+    std::thread([metrics = std::move(metrics), targetWnd, hostWnd]() {
         HRESULT hr = CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED);
+
+        // 分離プレビュー画面等の最前面復元および再描画ヘルパー
+        auto restoreWindow = [targetWnd, hostWnd]() {
+            if (targetWnd && IsWindow(targetWnd)) {
+                if (IsIconic(targetWnd)) {
+                    ShowWindow(targetWnd, SW_RESTORE);
+                } else if (!IsWindowVisible(targetWnd)) {
+                    ShowWindow(targetWnd, SW_SHOW);
+                }
+                BringWindowToTop(targetWnd);
+                SetForegroundWindow(targetWnd);
+                RedrawWindow(targetWnd, nullptr, nullptr,
+                             RDW_INVALIDATE | RDW_UPDATENOW | RDW_ALLCHILDREN);
+            }
+            if (hostWnd && hostWnd != targetWnd && IsWindow(hostWnd)) {
+                RedrawWindow(hostWnd, nullptr, nullptr,
+                             RDW_INVALIDATE | RDW_UPDATENOW | RDW_ALLCHILDREN);
+            }
+        };
 
         // 編集ロックが完全に解放されるのを待機
         Sleep(50);
 
-        HWND parentWnd = g_editHandle->get_host_app_window ? g_editHandle->get_host_app_window() : nullptr;
-
         // 設定の読み込み
         hud::PluginConfig config = hud::LoadConfig();
 
-        // (1) 保存ダイアログ表示
+        // (1) 保存ダイアログ表示 (targetWnd を親にすることで分離プレビューのZオーダーを維持)
         SYSTEMTIME st;
         GetLocalTime(&st);
         wchar_t defaultName[MAX_PATH];
@@ -74,7 +96,8 @@ static void OnCaptureMenuClicked(EDIT_SECTION* edit_section) {
                    st.wYear, st.wMonth, st.wDay, st.wHour, st.wMinute, st.wSecond);
 
         std::wstring savePath;
-        if (!hud::PromptSavePath(parentWnd, defaultName, savePath)) {
+        if (!hud::PromptSavePath(targetWnd, defaultName, savePath)) {
+            restoreWindow();
             if (SUCCEEDED(hr)) CoUninitialize();
             g_activeWorkers.fetch_sub(1);
             return; // ユーザーがキャンセル
@@ -83,7 +106,8 @@ static void OnCaptureMenuClicked(EDIT_SECTION* edit_section) {
         // (2) レンダリング済み映像フレームの取得
         hud::VideoFrameBuffer frameBuffer;
         if (!hud::CaptureFrame(g_editHandle, metrics.currentFrame, frameBuffer)) {
-            MessageBoxW(parentWnd, L"映像フレームのレンダリング取得に失敗しました。", L"HUD Screenshot Merger", MB_OK | MB_ICONERROR);
+            restoreWindow();
+            MessageBoxW(targetWnd, L"映像フレームを取得できませんでした。", L"HUD Screenshot Merger", MB_OK | MB_ICONERROR);
             if (SUCCEEDED(hr)) CoUninitialize();
             g_activeWorkers.fetch_sub(1);
             return;
@@ -91,17 +115,21 @@ static void OnCaptureMenuClicked(EDIT_SECTION* edit_section) {
 
         // (3) HUD レンダリング・画像結合・PNG 保存
         if (!hud::RenderAndSave(frameBuffer, metrics, config, savePath)) {
-            MessageBoxW(parentWnd, L"画像の結合または保存に失敗しました。", L"HUD Screenshot Merger", MB_OK | MB_ICONERROR);
+            restoreWindow();
+            MessageBoxW(targetWnd, L"画像を保存できませんでした。", L"HUD Screenshot Merger", MB_OK | MB_ICONERROR);
             if (SUCCEEDED(hr)) CoUninitialize();
             g_activeWorkers.fetch_sub(1);
             return;
         }
 
-        // (4) 保存完了後に画像を開く (設定で有効な場合)
+        // (4) ウィンドウ状態を確実にリストア
+        restoreWindow();
+
+        // (5) 保存完了通知または画像オープン (Microsoft UX Interaction Guidelines 準拠)
         if (config.openAfterSave) {
             ShellExecuteW(nullptr, L"open", savePath.c_str(), nullptr, nullptr, SW_SHOWNORMAL);
         } else {
-            MessageBoxW(parentWnd, L"進捗画像を保存しました。", L"HUD Screenshot Merger", MB_OK | MB_ICONINFORMATION);
+            MessageBoxW(targetWnd, L"画像を保存しました。", L"HUD Screenshot Merger", MB_OK | MB_ICONINFORMATION);
         }
 
         if (SUCCEEDED(hr)) {

@@ -2,7 +2,8 @@
 #include "palette.hpp"
 #include "resource.h"
 
-#include <shlwapi.h>
+#include <filesystem>
+#include <vector>
 
 namespace hud {
 
@@ -14,11 +15,21 @@ static std::wstring GetIniFilePath() {
         &hModule
     );
 
-    wchar_t path[MAX_PATH] = {0};
-    GetModuleFileNameW(hModule, path, MAX_PATH);
-    PathRemoveFileSpecW(path);
-    PathAppendW(path, L"hud_screenshot_merger.ini");
-    return std::wstring(path);
+    // MAX_PATH 制限を排除し、Long Path に対応した安全なバッファ確保
+    constexpr size_t BUFFER_SIZE = 32768;
+    std::vector<wchar_t> path(BUFFER_SIZE, L'\0');
+    DWORD len = GetModuleFileNameW(hModule, path.data(), static_cast<DWORD>(BUFFER_SIZE));
+    if (len == 0 || len >= BUFFER_SIZE) {
+        return L"hud_screenshot_merger.ini";
+    }
+
+    try {
+        std::filesystem::path fsPath(path.data());
+        fsPath = fsPath.parent_path() / L"hud_screenshot_merger.ini";
+        return fsPath.wstring();
+    } catch (...) {
+        return L"hud_screenshot_merger.ini";
+    }
 }
 
 PluginConfig LoadConfig() {

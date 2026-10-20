@@ -3,6 +3,7 @@
 
 #include <windows.h>
 #include <gdiplus.h>
+#include <algorithm>
 #include <iomanip>
 #include <memory>
 #include <sstream>
@@ -96,16 +97,17 @@ bool RenderAndSave(const VideoFrameBuffer& frame,
     const float padX = 24.0f;
     const float availWidth = static_cast<float>(totalWidth) - padX * 2.0f;
     const float colWidth = availWidth / 3.0f;
-    const float innerPadX = 16.0f;
+    const float innerPadX = 18.0f;
 
-    // カラム区切り縦線 (Y: パネル上部+16px 〜 パネル下部-16px)
-    float dividerY1 = static_cast<float>(frame.height) + 16.0f;
-    float dividerY2 = static_cast<float>(totalHeight) - 16.0f;
+    // カラム区切り縦線 (Divider): PROJECT / TIMELINE / SESSION の間に薄いグレー線を描画
+    Gdiplus::Pen dividerPen(pal.divider, 1.0f);
+    float dividerY1 = static_cast<float>(frame.height) + 18.0f;
+    float dividerY2 = static_cast<float>(totalHeight) - 18.0f;
 
     float div1X = padX + colWidth;
     float div2X = padX + colWidth * 2.0f;
-    g.DrawLine(&borderPen, div1X, dividerY1, div1X, dividerY2);
-    g.DrawLine(&borderPen, div2X, dividerY1, div2X, dividerY2);
+    g.DrawLine(&dividerPen, div1X, dividerY1, div1X, dividerY2);
+    g.DrawLine(&dividerPen, div2X, dividerY1, div2X, dividerY2);
 
     // フォント定義
     auto fontFamily = std::make_unique<Gdiplus::FontFamily>(L"Segoe UI");
@@ -129,8 +131,8 @@ bool RenderAndSave(const VideoFrameBuffer& frame,
 
     // 行Y座標
     float yRowLabel = static_cast<float>(frame.height) + 18.0f;
-    float yRowValue = static_cast<float>(frame.height) + 40.0f;
-    float yRowMuted = static_cast<float>(frame.height) + 76.0f;
+    float yRowValue = static_cast<float>(frame.height) + 38.0f;
+    float yRowMuted = static_cast<float>(frame.height) + 78.0f;
 
     auto DrawColumn = [&](int colIndex,
                           const std::wstring& label,
@@ -143,8 +145,8 @@ bool RenderAndSave(const VideoFrameBuffer& frame,
             w -= innerPadX;
         }
 
-        Gdiplus::RectF rectLabel(x, yRowLabel, w, 20.0f);
-        Gdiplus::RectF rectValue(x, yRowValue, w, 32.0f);
+        Gdiplus::RectF rectLabel(x, yRowLabel, w, 18.0f);
+        Gdiplus::RectF rectValue(x, yRowValue, w, 28.0f);
         Gdiplus::RectF rectMuted(x, yRowMuted, w, 22.0f);
 
         g.DrawString(label.c_str(), -1, &fontLabel, rectLabel, &format, &labelBrush);
@@ -165,10 +167,34 @@ bool RenderAndSave(const VideoFrameBuffer& frame,
                      << L" / " << metrics.totalFrames << L")";
 
     std::wostringstream ossTimelineMuted;
-    ossTimelineMuted << L"Selected: " << metrics.selectedObjectCount
-                     << L" / Total: " << metrics.totalObjectCount << L" Objects";
+    ossTimelineMuted << L"Total: " << metrics.totalObjectCount
+                     << (metrics.totalObjectCount == 1 ? L" Object" : L" Objects");
 
     DrawColumn(1, L"TIMELINE", ossTimelineValue.str(), ossTimelineMuted.str());
+
+    // TIMELINE プログレスバー描画 (Value と Muted の間に細いバーを描画)
+    {
+        float x = padX + colWidth + innerPadX;
+        float w = colWidth - innerPadX * 2.0f;
+        float barY = static_cast<float>(frame.height) + 67.0f;
+        float barHeight = 4.0f;
+
+        // トラック背景
+        Gdiplus::SolidBrush trackBrush(pal.barTrack);
+        g.FillRectangle(&trackBrush, x, barY, w, barHeight);
+
+        // 進行部分
+        float progressRatio = (metrics.totalFrames > 0)
+            ? (static_cast<float>(metrics.currentFrame + 1) / static_cast<float>(metrics.totalFrames))
+            : 0.0f;
+        progressRatio = std::clamp(progressRatio, 0.0f, 1.0f);
+
+        float fillWidth = w * progressRatio;
+        if (fillWidth > 0.0f) {
+            Gdiplus::SolidBrush progBrush(pal.barProgress);
+            g.FillRectangle(&progBrush, x, barY, fillWidth, barHeight);
+        }
+    }
 
     // Column 2: SESSION (@ユーザー名 を含む)
     std::wstring sessionVal = metrics.sessionDuration + L" (Active Time)";
